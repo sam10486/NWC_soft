@@ -152,7 +152,7 @@ long long find_prou(long long n, long long modular){
 vector<long long> phi_array(long long n, long long modular){
     vector<long long> phi_array(n);
     long long phi = find_phi(n, modular);
-    cout << "phi = " << phi << endl;
+    //cout << "phi = " << phi << endl;
     BitOperate rev;
     long long rev_index;
     /*cout << "n = " << n << endl;

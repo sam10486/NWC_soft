@@ -13,11 +13,11 @@ using namespace std;
 int main(){
     int in_1 = 2;
     int in_2 = 5;
-    int modular = 65537;
+    int modular = 12289;
     long long ans =0;
-    int n = 8192;
+    int n = 1024;
     BitOperate rev;
-    ostream_iterator<long long> os(cout, " | ");
+    ostream_iterator<long long> os(cout, " , ");
     
     std::default_random_engine generator( time(NULL) );
     std::uniform_real_distribution<float> unif(0, modular);
@@ -31,24 +31,30 @@ int main(){
     
     cout << "-------------------------input data--------------------" << endl;
     vector<long long> a(n);
+    vector<long long> b(n);
     for(int i=0; i<n; i++){
         long long x = unif(generator);
-        a.at(i) = x;
+        long long y = unif(generator);
+        a.at(i) = i;
+        b.at(i) = i;
     }    
+
     copy(a.begin(), a.end(), os);
+    cout << endl;
+    copy(b.begin(), b.end(), os);
     cout << endl;
     cout << "-------------------DFT ans -----------------------" << endl;
     vector<long long> NTT_forward_vec ;
     NTT_forward_vec = NWC_forward(a, n, modular);
-    copy(NTT_forward_vec.begin(), NTT_forward_vec.end(), os);
-    cout << endl;
+    /*copy(NTT_forward_vec.begin(), NTT_forward_vec.end(), os);
+    cout << endl;*/
     cout << "---------------IDFT ans-------------------" << endl;
     vector<long long> NTT_backward_vec ;
     long long rev_index;
 
     NTT_backward_vec = NWC_backward(NTT_forward_vec, n, modular);
-    copy(NTT_backward_vec.begin(), NTT_backward_vec.end(), os);
-    cout << endl;
+    /*copy(NTT_backward_vec.begin(), NTT_backward_vec.end(), os);
+    cout << endl;*/
 
     int flag;
     for(int i=0; i<n; i++){
@@ -62,6 +68,19 @@ int main(){
     }
     if(flag == 0)
         cout << "NWC successful!" << endl;
+
+    //----------------check element wise product---------------
+    vector<long long> NTT_forward_in1 , NTT_forward_in2;
+    vector<long long> NTT_forward_product(n);
+    NTT_forward_in1 = NWC_forward(a, n, modular);
+    NTT_forward_in2 = NWC_forward(b, n, modular);
+    for(long long int i=0; i<n; i++){
+        NTT_forward_product.at(i) = MulMod(NTT_forward_in1.at(i), NTT_forward_in2.at(i), modular);
+    }
+    vector<long long> NTT_backward_product ;
+    NTT_backward_product = NWC_backward(NTT_forward_product, n, modular);
+    copy(NTT_backward_product.begin(), NTT_backward_product.end(), os);
+    cout << endl;
     return 0;
 }
 
