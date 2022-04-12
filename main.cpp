@@ -2,6 +2,7 @@
 #include <vector>
 #include <algorithm>
 #include <iterator>
+#include <random>
 #include "NWC_math.h"
 #include "BitOperate.h"
 #include "math.h"
@@ -12,12 +13,14 @@ using namespace std;
 int main(){
     int in_1 = 2;
     int in_2 = 5;
-    int modular = 40961;
+    int modular = 65537;
     long long ans =0;
-    int n = 4096;
+    int n = 8192;
     BitOperate rev;
     ostream_iterator<long long> os(cout, " | ");
     
+    std::default_random_engine generator( time(NULL) );
+    std::uniform_real_distribution<float> unif(0, modular);
 
     /*vector<long long> phi_array_rev = phi_array(n, modular);
     copy(phi_array_rev.begin(), phi_array_rev.end(), os);
@@ -28,15 +31,17 @@ int main(){
     
     cout << "-------------------------input data--------------------" << endl;
     vector<long long> a(n);
-    for(int i=0; i<n; i++)
-        a.at(i) = i;
+    for(int i=0; i<n; i++){
+        long long x = unif(generator);
+        a.at(i) = x;
+    }    
     copy(a.begin(), a.end(), os);
     cout << endl;
-   // cout << "-------------------DFT ans -----------------------" << endl;
+    cout << "-------------------DFT ans -----------------------" << endl;
     vector<long long> NTT_forward_vec ;
     NTT_forward_vec = NWC_forward(a, n, modular);
-    /*copy(NTT_forward_vec.begin(), NTT_forward_vec.end(), os);
-    cout << endl;*/
+    copy(NTT_forward_vec.begin(), NTT_forward_vec.end(), os);
+    cout << endl;
     cout << "---------------IDFT ans-------------------" << endl;
     vector<long long> NTT_backward_vec ;
     long long rev_index;
@@ -45,13 +50,18 @@ int main(){
     copy(NTT_backward_vec.begin(), NTT_backward_vec.end(), os);
     cout << endl;
 
-    /*cout << "phi = " << find_phi(16,97) << endl;
-    cout << "prou = " << find_prou(16,97) << endl;*/
-    /*for (int i = 0; i < n; i++){
-        ans = rev.BitReserve(i, log2(n));
-        cout << "i = " << i << " reverse index = " << ans << endl;
-    }*/
-
+    int flag;
+    for(int i=0; i<n; i++){
+        if(NTT_backward_vec.at(i) != a.at(i)){
+            cout << "NWC error!" << endl;
+            flag = 1;
+            break;
+        }else{
+            flag = 0;
+        }
+    }
+    if(flag == 0)
+        cout << "NWC successful!" << endl;
     return 0;
 }
 
