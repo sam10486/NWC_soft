@@ -98,7 +98,7 @@ long long find_phi(long long n, long long modular){
     long long double_n = n*2;
     for(j=2;j<modular;j++){
         if((modular % j) == 0){
-            printf("modular is no prime\n");
+            printf("---------------modular is no prime----------------\n");
             return 0;
         }
     }
@@ -148,10 +148,11 @@ long long find_prou(long long n, long long modular){
     return prou;
 }
 
+//****************index reverse phi array*****************
 vector<long long> phi_array(long long n, long long modular){
     vector<long long> phi_array(n);
     long long phi = find_phi(n, modular);
-    cout << "phi = " << phi << endl;
+    //cout << "phi = " << phi << endl;
     BitOperate rev;
     long long rev_index;
     /*cout << "n = " << n << endl;
@@ -166,4 +167,16 @@ vector<long long> phi_array(long long n, long long modular){
     /*for(int i=0; i<n;i++)
         cout << "phi_array = " << phi_array[i] << endl;*/
     return phi_array;
+}
+//**************index reverse phi inv array*********************
+vector<long long> phi_array_inv(long long n, long long modular){
+    vector<long long> phi_array_tmp = phi_array(n, modular);
+    
+    vector<long long> phi_array_inv(n);
+    for(int i=0; i<n; i++){
+        phi_array_inv.at(i) =  InvMod(phi_array_tmp.at(i), modular);
+        //cout << "phi_array_inv.at " << i << " = "<< phi_array_inv.at(i) << endl;
+    }
+        
+    return phi_array_inv;
 }

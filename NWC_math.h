@@ -16,4 +16,5 @@ long long find_phi(long long n, long long modular); //// p = 1 mod 2n
 bool isPrime(long long n);
 long long find_prou(long long n, long long modular);
 vector<long long> phi_array(long long n, long long modular);
+vector<long long> phi_array_inv(long long n, long long modular);
 #endif
