@@ -36,9 +36,9 @@ int main(){
                 long long MA = RR.RR(BC, bit_width_s*t, degree_N, radix_r);
                 cout << "(BC, MA) = " << "(" << BC << ", " << MA << ")" << endl;
 
-                Int2Vec.IntToVec(BC,degree_N, radix_r, bit_array);
+                Int2Vec.IntToVec(BC,degree_N, bit_array);
                 rotate(bit_array.begin(), bit_array.begin()+ bit_width_s*t , bit_array.end());
-                long long Data = Vec2Int.VecToInt(bit_array, degree_N, radix_r);
+                long long Data = Vec2Int.VecToInt(bit_array, degree_N);
                 cout << "Data_index = ( ";
                 long long bit_width = log2(degree_N);
                 for(long long k=0; k<radix_r; k++){

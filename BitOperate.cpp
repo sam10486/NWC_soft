@@ -30,7 +30,7 @@ vector<long long> BitOperate::DecToBin(long long data, long long bit_width){
     return BinVec;
 }
 
-void BitOperate::IntToVec(long long integer, long long N, long long r, vector<long long> &bit_array){
+void BitOperate::IntToVec(long long integer, long long N, vector<long long> &bit_array){
     long long bit_width = (long long)ceil(log2(N));
     bit_array.resize(bit_width);
     for(long long j=0; j < bit_width; j++){
@@ -40,7 +40,7 @@ void BitOperate::IntToVec(long long integer, long long N, long long r, vector<lo
     
 }
 
-long long BitOperate::VecToInt(vector<long long> &bit_array, long long N, long long r){
+long long BitOperate::VecToInt(vector<long long> bit_array, long long N){
     long long bit_width = (long long)ceil(log2(N));
     long long integer = 0;
     for(long long j=0; j < bit_width; j++){
@@ -63,4 +63,31 @@ long long BitOperate::RR(long long BC, long long shift_bit, long long N, long lo
         //cout << RR_out << endl ;
     }
     return RR_out;
+}
+
+long long BitOperate::Gray_code(long long index, long long group){
+    long long group_bit_width = (long long)ceil(log2(group));
+    vector<long long> index_bit_array(group_bit_width);
+    BitOperate DecToBin, VecToInt;
+    index_bit_array = DecToBin.DecToBin(index, group_bit_width);
+    
+    for(long long i=0; i<group_bit_width; i++){
+        if(i == (group_bit_width-1))
+            index_bit_array.at(i) = index_bit_array.at(i);
+        else
+            index_bit_array.at(i) = index_bit_array.at(i) ^ index_bit_array.at(i+1);      
+    } 
+    long long Gray_num = VecToInt.VecToInt(index_bit_array, group);
+    return Gray_num;
+}
+
+long long BitOperate::unary_xor(long long data_in, long long bit_width){
+    BitOperate DecToBin;
+    vector<long long> bit_array = DecToBin.DecToBin(data_in, bit_width);
+    long long xor_out = 0;
+    for(long long i=0; i<bit_width; i++){
+        xor_out += bit_array[i];
+    }
+    xor_out %= 2;
+    return xor_out;
 }
