@@ -3,7 +3,10 @@
 
 #include <iostream>
 #include <vector>
+#include <NTL/ZZ.h>
+
 using namespace std;
+using namespace NTL;
 
 long long AddMod(long long, long long, long long);
 long long SubMod(long long in_1, long long in_2, long long q);
@@ -17,4 +20,10 @@ bool isPrime(long long n);
 long long find_prou(long long n, long long modular);
 vector<long long> phi_array(long long n, long long modular);
 vector<long long> phi_array_inv(long long n, long long modular);
+
+
+//----------ZZ-------------
+ZZ find_n_rou(ZZ base, long long m, ZZ modular);
+bool check_prou(ZZ n_rou, long long m, ZZ modular);
+ZZ find_phi(long long m, ZZ modular);
 #endif

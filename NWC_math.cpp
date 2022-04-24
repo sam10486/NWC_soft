@@ -5,9 +5,11 @@
 #include "assert.h"
 #include "BitOperate.h"
 #include <vector>
+#include <NTL/ZZ.h>
 
 
 using namespace std;
+using namespace NTL;
 
 
 // q is prime
@@ -179,4 +181,52 @@ vector<long long> phi_array_inv(long long n, long long modular){
     }
         
     return phi_array_inv;
+}
+
+//------------ZZ ----------------------
+
+ZZ find_n_rou(ZZ base, long long m, ZZ modular) // a^(p-1) = 1 (mod p)  ---> base^(modular-1) = 1 (mod modular)
+{
+	//cout << " m = " << m << " modular = "<< modular << endl; 
+	assert(( modular % m ) == 1);
+	ZZ i;
+	ZZ n_rou;
+	i = (modular-1)/m ;   // base^(modular - 1) = base^( n * i ) = (base^i)^n = 1 (mod modular)
+	PowerMod(n_rou, base, i, modular);
+	//cout << " n_rou = " << n_rou << endl;
+	return n_rou;
+}
+
+bool check_prou(ZZ n_rou, long long m, ZZ modular){ //check if n_rou^1, n_rou^2,...,n_rou^(m-1) is not equal 1;
+	bool is_prou = true;
+	ZZ tmp;
+	for(int i = 1; i < m; i++){
+		PowerMod(tmp, n_rou, i, modular);
+		if(tmp == 1){
+			is_prou = false;
+			break;
+		}
+	}
+	return is_prou;
+}
+
+ZZ find_phi(long long m, ZZ modular)
+{   
+	bool is_prou = false;
+	ZZ i = (ZZ)2 ;
+	ZZ n_rou;
+	ZZ prou;
+    long long degree = 2 * m;
+	while(is_prou == false)
+	{
+		//cout << " 1 " << endl;
+		n_rou = find_n_rou(i, degree, modular);
+		//cout << " 2 " << endl;
+		is_prou = check_prou(n_rou, degree, modular);
+		//cout << " 3 " << endl;
+		i = i + 1;		
+	}
+	//cout << " base " << i-1 << endl;
+	prou = n_rou;
+	return prou;
 }
