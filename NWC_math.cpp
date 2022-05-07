@@ -183,6 +183,68 @@ vector<long long> phi_array_inv(long long n, long long modular){
     return phi_array_inv;
 }
 
+long long barrett_reduction(long long a, long long b, long long modular){
+    long long n = ceil(log2(modular));
+    cout << "n = " << n << endl;
+    long long mu = floor(pow(2,2*n)/modular);
+    cout << "mu = " << mu << endl;
+    long long z = a * b;
+    cout << "z = " << z << endl;
+    long long tmp1 = floor(z >> (long long)log2(pow(2,n)));
+    long long tmp2 = mu >> (long long)log2(pow(2,n));
+    cout << "tmp1 = " << tmp1 << endl;
+    cout << "tmp2 = " << tmp2 << endl;
+    long long r = z - (tmp1 * tmp2) * modular;;
+    cout << "r = " << r << endl;
+    while(r >= modular){
+        r = r - modular;
+    }
+    return r;
+}
+
+long long modular_mul(long long x, long long y, long long modular){
+    long long modular_BW = ceil(log2(modular)); //precompute
+    long long tmp_y = floor((y*pow(2,modular_BW))/modular); //precompute
+    long long z = (x * y);
+    if(z > pow(2, modular_BW))
+        z = z - pow(2, modular_BW);
+    long long t = floor((x*tmp_y)>>modular_BW);
+    long long z_e = t *  modular;
+    if(z_e > pow(2, modular_BW))
+        z_e = z_e - pow(2, modular_BW);
+    z = z - z_e;
+    cout << "z = " << z << endl;
+    if(z >= modular)
+        z = z - modular;
+    
+    return z;
+}
+
+long long precompute_value(long long modular, long long bit_width, long long alpha){
+    long long tmp = pow(2, (bit_width + alpha));
+    long long result = floor(tmp/modular);
+    return result;
+}
+
+long long find_prime(long long m, long long powerof2){
+	bool flag = 0;
+	bool powerof2_flag = 0;
+	bool prime_flag = 0;	
+	long long i = 0;
+	long long tmp ;
+	long long init = m * pow(2,powerof2);
+	while(flag == 0){
+		i++ ;
+		tmp = init * i;
+		powerof2_flag = 0;
+		prime_flag = 0;
+		prime_flag = isPrime(tmp+1);
+		if(prime_flag == 1){		
+			flag = 1;
+		}			
+	}
+	return tmp+1 ;	
+}
 //------------ZZ ----------------------
 
 ZZ find_n_rou(ZZ base, long long m, ZZ modular) // a^(p-1) = 1 (mod p)  ---> base^(modular-1) = 1 (mod modular)
@@ -230,3 +292,6 @@ ZZ find_phi(long long m, ZZ modular)
 	prou = n_rou;
 	return prou;
 }
+
+
+

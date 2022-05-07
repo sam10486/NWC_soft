@@ -20,10 +20,13 @@ bool isPrime(long long n);
 long long find_prou(long long n, long long modular);
 vector<long long> phi_array(long long n, long long modular);
 vector<long long> phi_array_inv(long long n, long long modular);
-
-
+long long barrett_reduction(long long a, long long b, long long modular);
+long long modular_mul(long long a, long long b, long long modular);
+long long precompute_value(long long modular, long long bit_width, long long alpha);
+long long find_prime(long long m, long long powerof2); // power of 2: m=1, if not power of 2, such as x^105-1 , m=105
 //----------ZZ-------------
 ZZ find_n_rou(ZZ base, long long m, ZZ modular);
 bool check_prou(ZZ n_rou, long long m, ZZ modular);
 ZZ find_phi(long long m, ZZ modular);
+
 #endif

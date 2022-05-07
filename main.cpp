@@ -15,7 +15,7 @@ int main(){
     int in_2 = 5;
     int modular = 12289;
     long long ans =0;
-    int n = 1024;
+    int n = 2048;
     BitOperate rev;
     ostream_iterator<long long> os(cout, " , ");
     
