@@ -22,7 +22,7 @@ int main(){
     ofs_output_pattern.open("/home/ldap-users/siang/Desktop/NWC_verilog/N26094891/sim/data_file/R16_BU/output_pattern.txt");
 
     long long n=16;
-    long long prime = find_prime(1, 6);
+    long long prime = find_prime(1, 7);
     long long twiddle = find_phi(n, prime);
     cout << "prime  = " << prime << endl;
 
@@ -35,8 +35,8 @@ int main(){
         vector<long long> a(n);
         for(int i=0; i<n; i++){
             long long x = unif(generator);
-            ofs_input_pattern << std::hex << x << endl;
-            a.at(i) = x;
+            ofs_input_pattern << std::hex << i << endl;
+            a.at(i) = i;
         }
         
         long long phi = find_phi(n, prime);

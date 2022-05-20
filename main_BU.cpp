@@ -16,7 +16,7 @@ using namespace NTL;
 int main(){
     ofstream ofs, ofs_up, ofs_down, ofs_pattern_up, ofs_pattern_down;
  
-    long long prime = find_prime(1, 6);
+    long long prime = find_prime(1, 7);
     cout << "prime  = " << prime << endl;
     ofs.open("/home/ldap-users/siang/Desktop/NWC_verilog/N26094891/sim/data_file/BU/twiddle_out.txt");
     ofs_up.open("/home/ldap-users/siang/Desktop/NWC_verilog/N26094891/sim/data_file/BU/fft_up.txt");
@@ -32,13 +32,13 @@ int main(){
                 ofs_pattern_down << std::hex << j << endl; 
             }
         }
-        long long degree = 8;
+        long long degree = 64;
         long long twiddle = find_prou(degree, prime);
  
         int k=0;
         for(int i=10; i < 16; i++){
             for(int j=0; j<16;j++){
-                long long fft_up = i+j;
+                long long fft_up = AddMod(i,j, prime);
                 long long pow_twiddle = ExpMod(twiddle, k, prime);
                 k = k+1;
                 long long fft_down = MulMod(SubMod(i,j, prime), pow_twiddle, prime);
@@ -76,7 +76,7 @@ int main(){
         }
         
 
-        long long degree = 8;
+        long long degree = 64;
         long long twiddle = find_prou(degree, prime);
         /*vector<long long> twiddle_array;
         for(int i=0; i<num; i++){
