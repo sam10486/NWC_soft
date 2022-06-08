@@ -28,17 +28,6 @@ long long FFT(long long *DFT_data, long long *data_in, long long n, long long pr
 long long FFT_no_bit_reverse(long long *DFT_data, long long *data_in, long long n, long long prou, long long modular);
 long long prou_power(long long data_in, long long power, long long modular);
 long long DFT(long long *DFT_data, long long *data_in, long long m, long long prou, long long modular);
-vector<long long> NWC(vector<long long> a, long long degree, long long phi, long long modular);
-vector<long long> INWC(vector<long long> a, long long degree, long long phi, long long modular);
-long long NWC_FFT_no_bit_reverse(   long long *DFT_data, long long *data_in, long long n, long long prou, 
-                                    long long phi, long long modular);
-long long NWC_forward_DIT(  long long *NWC_ans, long long *a, 
-                            long long degree, long long phi, long long modular);
-long long power2_NTT(   long long *NTT_data, long long *data_in, long long n, 
-                        long long *twiddle_array, long long modular);
-long long mixed_radix_NWC(  long long *NWC_data, long long *NWC_data_in, 
-                            long long n, long long radix_k1, long long radix_k2, long long phi, 
-                            long long modular);
 //----------ZZ-------------
 ZZ find_n_rou(ZZ base, long long m, ZZ modular);
 bool check_prou(ZZ n_rou, long long m, ZZ modular);

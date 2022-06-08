@@ -428,6 +428,356 @@ long long DFT(long long *DFT_data, long long *data_in, long long m, long long pr
     
 	return 0;
 }
+
+vector<long long> NWC(vector<long long> a, long long degree, long long phi, long long modular){
+    long long t = degree;
+    BitOperate Bitrev;
+    for(long long m = 1; m < degree; m = m << 1){
+        t = t / 2;
+        for(long long i = 0; i < m; i++){
+            long long j1 = 2*i*t;
+            long long j2 = j1 + t - 1;
+            long long bit_num = ceil(log2(degree));
+            long long index = Bitrev.BitReserve((m+i), bit_num);
+            long long S = ExpMod(phi, index, modular);
+            for(long long j = j1; j <= j2; j++){
+                long long U = a.at(j);
+                long long V = MulMod(a.at(j+t), S, modular);
+                a.at(j) = AddMod(U, V, modular);
+                a.at(j+t) = SubMod(U, V, modular);
+            }
+        }
+    }
+    return a;
+}
+
+vector<long long> INWC(vector<long long> a, long long degree, long long phi, long long modular){
+    long long t = 1;
+    long long bit_num = ceil(log2(degree));
+    BitOperate Bitrev;
+    for(long long m=degree; m>1; m = m >> 1){
+        long long j1 = 0;
+        long long h = m / 2;
+        for(long long i = 0; i < h; i++){
+            long long j2 = j1 + t - 1;
+            long long index = Bitrev.BitReserve((h+i), bit_num);
+            long long S = ExpMod(phi, index, modular);
+            for(long long j = j1; j <= j2; j++){
+                long long U = a.at(j);
+                long long V = a.at(j+t);
+                a.at(j) = AddMod(U, V, modular);
+                a.at(j+t) = MulMod(SubMod(U,V,modular), S, modular);
+            }
+            j1 = j1 + 2*t;
+        }
+        t = 2*t;
+    }
+    long long degree_inv = InvMod(degree, modular);
+    for(long long j = 0; j < degree; j++){
+        a.at(j) = MulMod(a.at(j), degree_inv, modular);
+    }
+    return a;
+}
+
+long long NWC_FFT_no_bit_reverse(long long *DFT_data, long long *data_in, long long n, long long prou, long long phi, long long modular){ //primitive root of unity in n-point FFT
+	long long DFT_data_tmp_1[n];
+	long long DFT_data_tmp_2[n];
+    long long two_to_i, ind_j;
+    long long i, j, k;
+    long long phi_exp;
+    long long prou_exp;
+    long long twiddle;
+
+    long long check_n;// check if m | modular - 1
+	check_n = (modular-1) % (2*n);
+    assert(check_n == 0) ; 
+
+    for(j=0;j<n;j++){
+        DFT_data_tmp_1[j] = data_in[j];
+    }
+
+    for(i=0;i<log2(n);i++){
+        two_to_i=(n/2)>>i;
+        for(k=0;k<two_to_i;k++){
+            for(j=0;j<((n/two_to_i)/2);j++){
+                ind_j = j + k * (n/two_to_i);
+                phi_exp = ExpMod(phi, two_to_i, modular);
+                prou_exp = ExpMod(prou, j*two_to_i, modular);
+                twiddle = MulMod(phi_exp, prou_exp, modular);
+                //cout << "i = " << i << "   two_to_i = " << two_to_i << endl;
+                //cout << "phi_exp = " << phi_exp << "   " << "prou_exp = " << prou_exp << "   " << "twiddle = " << twiddle << endl;
+                //cout << "ind_j = " << ind_j << "   " << "ind_j + ((n/two_to_i)/2) = " << ind_j + ((n/two_to_i)/2) << endl;
+                //cout << "------------------------------------------" << endl;
+                DFT_data_tmp_1[ind_j + ((n/two_to_i)/2)] = MulMod(DFT_data_tmp_1[ind_j + ((n/two_to_i)/2)], twiddle, modular);
+                //BU2 up output
+                DFT_data_tmp_2[ind_j] = AddMod(DFT_data_tmp_1[ind_j], DFT_data_tmp_1[ind_j + ((n/two_to_i)/2)], modular);
+                //BU2 down output
+                DFT_data_tmp_2[ind_j + ((n/two_to_i)/2)] = SubMod(DFT_data_tmp_1[ind_j], DFT_data_tmp_1[ind_j + ((n/two_to_i)/2)], modular);
+                //cout << "phi_exp = " << phi_exp << "   " << "prou_exp = " << prou_exp << endl;
+                //cout << "twiddle = " << twiddle << endl;
+                //cout << "DFT_data_tmp_1[" << ind_j + ((n/two_to_i)/2) << "] = " <<  DFT_data_tmp_1[ind_j + ((n/two_to_i)/2)] << endl;
+                //cout << "DFT_data_tmp_2[" << ind_j << "] = " << DFT_data_tmp_2[ind_j] << endl;
+                //cout << "DFT_data_tmp_2[" << ind_j + ((n/two_to_i)/2) << "] = " << DFT_data_tmp_2[ind_j + ((n/two_to_i)/2)] << endl;
+            }
+        }
+        //cout << "1231321231313" << endl;
+        for(j=0;j<n;j++){
+            DFT_data_tmp_1[j] = DFT_data_tmp_2[j];
+            DFT_data_tmp_1[j] %= modular;
+        }
+    }
+    //output index
+    for(i=0;i<n;i++)
+    {
+        DFT_data[i] = DFT_data_tmp_1[i]; //deal with negative
+        if(DFT_data[i] < 0)
+        {
+        	DFT_data[i] += modular;
+        }
+    }	
+
+    return 0;
+}
+
+
+long long NWC_FFT_no_bit_reverse_DIF_ver(long long *DFT_data, long long *data_in, long long n, long long prou, long long phi, long long modular){ //primitive root of unity in n-point FFT
+	long long DFT_data_tmp_1[n];
+	long long DFT_data_tmp_2[n];
+    long long two_to_i, ind_j;
+    long long i, j, k;
+    long long phi_exp;
+    long long prou_exp;
+    long long twiddle;
+
+    long long check_n;// check if m | modular - 1
+	check_n = (modular-1) % (2*n);
+    assert(check_n == 0) ; 
+
+    for(j=0;j<n;j++){
+        DFT_data_tmp_1[j] = data_in[j];
+    }
+
+    for(i=0;i<log2(n);i++){
+        two_to_i=(n/2)>>i;
+        for(k=0;k<two_to_i;k++){
+            for(j=0;j<((n/two_to_i)/2);j++){
+                ind_j = j + k * (n/two_to_i);
+                phi_exp = ExpMod(phi, two_to_i, modular);
+                prou_exp = ExpMod(prou, j*two_to_i, modular);
+                twiddle = MulMod(phi_exp, prou_exp, modular);
+                //cout << "i = " << i << "   two_to_i = " << two_to_i << endl;
+                //cout << "phi_exp = " << phi_exp << "   " << "prou_exp = " << prou_exp << "   " << "twiddle = " << twiddle << endl;
+                //cout << "ind_j = " << ind_j << "   " << "ind_j + ((n/two_to_i)/2) = " << ind_j + ((n/two_to_i)/2) << endl;
+                //cout << "------------------------------------------" << endl;
+                DFT_data_tmp_1[ind_j + ((n/two_to_i)/2)] = MulMod(DFT_data_tmp_1[ind_j + ((n/two_to_i)/2)], twiddle, modular);
+                //BU2 up output
+                DFT_data_tmp_2[ind_j] = AddMod(DFT_data_tmp_1[ind_j], DFT_data_tmp_1[ind_j + ((n/two_to_i)/2)], modular);
+                //BU2 down output
+                DFT_data_tmp_2[ind_j + ((n/two_to_i)/2)] = SubMod(DFT_data_tmp_1[ind_j], DFT_data_tmp_1[ind_j + ((n/two_to_i)/2)], modular);
+                //cout << "phi_exp = " << phi_exp << "   " << "prou_exp = " << prou_exp << endl;
+                //cout << "twiddle = " << twiddle << endl;
+                //cout << "DFT_data_tmp_1[" << ind_j + ((n/two_to_i)/2) << "] = " <<  DFT_data_tmp_1[ind_j + ((n/two_to_i)/2)] << endl;
+                //cout << "DFT_data_tmp_2[" << ind_j << "] = " << DFT_data_tmp_2[ind_j] << endl;
+                //cout << "DFT_data_tmp_2[" << ind_j + ((n/two_to_i)/2) << "] = " << DFT_data_tmp_2[ind_j + ((n/two_to_i)/2)] << endl;
+            }
+        }
+        //cout << "1231321231313" << endl;
+        for(j=0;j<n;j++){
+            DFT_data_tmp_1[j] = DFT_data_tmp_2[j];
+            DFT_data_tmp_1[j] %= modular;
+        }
+    } 
+
+    //output index
+    for(i=0;i<n;i++)
+    {
+        DFT_data[i] = DFT_data_tmp_1[i]; //deal with negative
+        if(DFT_data[i] < 0)
+        {
+        	DFT_data[i] += modular;
+        }
+    }	
+
+    return 0;
+}
+
+
+long long NWC_forward_DIT(long long *NWC_ans, long long *a, long long degree, long long phi, long long modular){
+    BitOperate BR;
+    // vector s a bit reverse
+    long long bit_width = log2(degree);
+    for(long long i=0; i<degree; i++){
+        long long idx_BR = BR.BitReserve(i, bit_width);
+        NWC_ans[i] = a[idx_BR];
+        //cout << "input = " << NWC_ans[i] << endl;
+    }
+
+    for(long long s=1; s<=log2(degree); s++){
+        //cout << "stage = " << s << endl;
+        long long m = ExpMod(2, s, modular);
+        for(long long j=0; j<=(m/2)-1; j++){
+            long long twiddle_dg = ((2*j+1) * degree)/m;
+            long long twiddle = ExpMod(phi, twiddle_dg, modular);
+            //cout << " twiddle = " <<  twiddle << endl;
+            for(long long k=0; k<=(degree/m)-1; k++){
+                long long u = NWC_ans[k*m+j];
+                long long t = MulMod(twiddle, NWC_ans[k*m+j+(m/2)], modular);
+                //cout << " NWC_ans[k*m+j+(m/2)] = " <<  NWC_ans[k*m+j+(m/2)] << endl;
+                NWC_ans[k*m+j] = AddMod(u, t, modular);
+                NWC_ans[k*m+j+(m/2)] = SubMod(u, t, modular);
+                //cout << " u = " <<  u << endl;
+                //cout << " t = " <<  t << endl;
+                //cout << " NWC_ans up = " <<  NWC_ans[k*m+j] << endl;
+                //cout << " NWC_ans down = " <<  NWC_ans[k*m+j+(m/2)] << endl;
+            }
+        }
+    }
+}
+
+long long power2_NTT(   long long *NTT_data, long long *data_in, long long n, 
+                        long long *twiddle_array, long long modular){
+    
+    long long W;
+    /*for(int i=0;i<n;i++)
+        //cout << data_in[i] << " ";
+        //cout << twiddle_array[i] << " ";
+    cout << endl;*/
+    //cout << "n = " << n << endl;
+    for(int h=1; h<n; h = 2 * h){
+        for(int j=0; j<h; j++){
+            W = twiddle_array[h+j];
+            //cout << "h = " << h << endl;
+            //cout << "j = " << j << endl;
+            //cout << "W[" << h+j << "]= " << W << endl;
+            for(int i=(j*n)/h; i< ( (2*j+1)*n ) / (2*h) ; i++){
+                long long tmp = MulMod(W, data_in[i + n/(2*h)], modular);
+                //cout << "data_in[" << i + n/(2*h) << "] = " << data_in[i + n/(2*h)] << endl;
+                //cout << "tmp = " << tmp << endl;
+                data_in[i + n/(2*h)] = SubMod(data_in[i], tmp, modular);
+                data_in[i] = AddMod(data_in[i], tmp, modular);
+                //cout << "data_in[" << i + n/(2*h) << "] = " << data_in[i + n/(2*h)] << endl;
+                //cout << "data_in[" << i << "] = " << data_in[i] << endl;
+            }
+        }
+    }
+    for(int i=0; i<n; i++){
+        NTT_data[i] = data_in[i];
+    }
+}
+
+long long mixed_radix_NWC(  long long *NWC_data, long long *NWC_data_in, 
+                            long long n, long long radix_k1, long long radix_k2, long long phi, 
+                            long long modular){
+
+    long long k = ( log2(n) - radix_k2) / radix_k1;
+    cout << "k = " << k << endl;
+    long long parameter_check = radix_k1 * k + radix_k2;
+    assert(parameter_check == log2(n));
+
+    int element_num = pow(2, radix_k1);
+    long long W[element_num - 1] = {0};
+    long long tmp[element_num] = {0} ;
+    long long tmp_array[element_num] = {0};
+    BitOperate BR;
+    //k radix 2^k1 NTTs
+    for(long long l=0; l<k; l++){
+        for(long long m=1; m<pow(2, radix_k1); m++){
+            long long m_bar = BR.BitReserve( (pow(2, radix_k1*l)-1) * pow(2, floor(log2(m))) + m, log2(n) ); 
+            //cout << "(pow(2, radix_k1*l)-1) * pow(2, floor(log2(m))) + m = " << (pow(2, radix_k1*l)-1) * pow(2, floor(log2(m))) + m << endl;
+            //cout << "m_bar = " << m_bar << endl;
+            W[m] = ExpMod(phi, m_bar, modular);
+            //cout << "W[" << m << "] = " << W[m] << endl;
+        }
+        cout << "------------" << endl;
+        for(int j=0; j<pow(2, radix_k1*l); j++){
+            long long j_bar = BR.BitReserve(j, radix_k1*l);
+            for(int i=0; i<pow(2, log2(n)- radix_k1*(l+1)); i++){
+                for(int m=0; m<pow(2, radix_k1); m++){
+                    long long index = j_bar * pow(2, log2(n) - radix_k1*l) + m * pow(2, log2(n) - radix_k1*(l+1)) + i;
+                    tmp[m] = NWC_data_in[index];
+                    cout << "BU[" << i << "] = " << index << endl;
+                    //cout << "tmp[" << m << "] = " << tmp[m] << endl;
+                }
+                cout << "i = " << i << endl;
+                /*for(int i=0; i<pow(2, radix_k1);i++)
+                    cout << W[i] << " ";
+                cout << endl;*/
+                power2_NTT(tmp_array, tmp, pow(2, radix_k1), W, modular); 
+
+                for(int m=0; m<pow(2, radix_k1); m++){
+                    long long index = j_bar * pow(2, log2(n) - radix_k1*l) + m * pow(2, log2(n) - radix_k1*(l+1)) + i;
+                    NWC_data_in[index] = tmp_array[m];
+                    //cout << "tmp_array[" << m << "] = " << tmp_array[m] << endl;
+                    //cout << "NWC_data_in[" << index << "] = " << NWC_data_in[index] << endl;
+                }
+            }
+
+            for(int m=1; m<pow(2, radix_k1); m++){
+                long long Wc_degree = log2(n) - radix_k1 * l - floor(log2(m));
+                if(Wc_degree != log2(n))
+                    Wc_degree = pow(2, Wc_degree);
+                else 
+                    Wc_degree = 0;
+                //cout << "Wc_degree = " << Wc_degree << endl;
+                long long Wc = ExpMod(phi, Wc_degree, modular);
+                W[m] = MulMod(W[m], Wc, modular);
+                //cout << "W[" << m << "] = " << W[m] << endl;
+            }
+        }
+    }
+    for(int i=0; i<n; i++)
+        cout << NWC_data_in[i] << " ";
+    cout << endl;
+
+    cout << "------------------" << endl;
+    int element_num_k2 = pow(2, radix_k2);
+    long long W_k2[element_num_k2 - 1] = {0} ;
+    long long tmp_k2[element_num_k2] = {0} ;
+    long long tmp_array_k2[element_num_k2] = {0};
+    // radix_2^k2 NTT
+    for(int m=1; m<pow(2, radix_k2); m++){
+        long long idx = (pow(2, radix_k1*k) - 1) * pow(2, floor(log2(m))) + m;
+        //cout << "idx = " << idx << endl;
+        long long m_bar = BR.BitReserve(idx, log2(n));
+        //cout << "m_bar = " << m_bar << endl;
+        W_k2[m] = ExpMod(phi, m_bar, modular);
+        //cout << "W_k2[" << m << "] = " <<  W_k2[m] << endl;
+    }
+    for(int j=0; j<pow(2, radix_k1 * k); j++){
+        long long j_bar = BR.BitReserve(j, radix_k1 * k);
+        for(int m=0; m<pow(2, radix_k2); m++){
+            int idx = j_bar * pow(2, radix_k2) + m;
+            tmp_k2[m] = NWC_data_in[idx];
+        }
+
+        for(int i=0; i<pow(2, radix_k2); i++){
+            //cout << "tmp_k2[" << i << "] = " << tmp_k2[i] << " ";
+        }
+        //cout << endl;
+        power2_NTT(tmp_array_k2, tmp_k2, pow(2,radix_k2), W_k2, modular);
+        for(int m=0; m<pow(2, radix_k2); m++){
+            int idx = j_bar * pow(2, radix_k2) + m;
+            NWC_data_in[idx] = tmp_array_k2[m];
+            //cout << "NWC_data_in[" << idx << "] = " << NWC_data_in[idx] << endl;
+        }
+        for(int m=1; m<pow(2, radix_k2); m++){
+            long long Wc_degree_k2 = radix_k2 - floor(log2(m));
+            Wc_degree_k2 = pow(2, Wc_degree_k2);
+            long long Wc_k2 = ExpMod(phi, Wc_degree_k2, modular);
+            W_k2[m] = MulMod(W_k2[m], Wc_k2, modular);
+        }
+    }
+
+    for(int i=0; i<n; i++){
+        NWC_data[i] = NWC_data_in[i];
+        //cout << "NWC_data[" << i << "] = " << NWC_data[i] << endl;
+    }
+    cout << endl;
+}
+
+
+
+
 //------------ZZ ----------------------
 
 ZZ find_n_rou(ZZ base, long long m, ZZ modular) // a^(p-1) = 1 (mod p)  ---> base^(modular-1) = 1 (mod modular)

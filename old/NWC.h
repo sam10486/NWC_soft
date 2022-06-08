@@ -4,6 +4,4 @@
 vector<long long> NWC_forward(vector<long long> a, long long degree, long long modular);
 vector<long long> NWC_backward(vector<long long> a, long long degree, long long modular);
 vector<long long> NWC_backward_merge_scale(vector<long long> a, long long degree, long long modular);
-vector<long long> NWC_forward_DIT(vector<long long> a, long long degree, long long phi, long long modular);
-
 #endif
