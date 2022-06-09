@@ -68,7 +68,7 @@ int main(){
 
 
 
-    long long n = 8192;
+    long long n = 65536;
     long long modular = 2752513;
     long long phi = find_phi(n, modular);
     long long prou = ExpMod(phi, 2, modular);
@@ -92,7 +92,7 @@ int main(){
     }
     cout << endl;
 
-    mixed_radix_NWC(mixed_radix_out, data_in, n, 4, 1, phi, modular);
+    mixed_radix_NWC(mixed_radix_out, data_in, n, 4, 4, phi, modular);
 
     cout << "output" << endl;
     BitOperate BR;

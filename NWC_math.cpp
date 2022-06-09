@@ -688,17 +688,17 @@ long long mixed_radix_NWC(  long long *NWC_data, long long *NWC_data_in,
             W[m] = ExpMod(phi, m_bar, modular);
             //cout << "W[" << m << "] = " << W[m] << endl;
         }
-        cout << "------------" << endl;
+        cout << "----j means group number, i means numbers of BU in one group----" << endl;
         for(int j=0; j<pow(2, radix_k1*l); j++){
             long long j_bar = BR.BitReserve(j, radix_k1*l);
             for(int i=0; i<pow(2, log2(n)- radix_k1*(l+1)); i++){
+                cout << "i = " << i << endl;
                 for(int m=0; m<pow(2, radix_k1); m++){
                     long long index = j_bar * pow(2, log2(n) - radix_k1*l) + m * pow(2, log2(n) - radix_k1*(l+1)) + i;
                     tmp[m] = NWC_data_in[index];
-                    cout << "BU[" << i << "] = " << index << endl;
+                    cout << "Group[" << j << "][" << i << "]= " << index << endl;
                     //cout << "tmp[" << m << "] = " << tmp[m] << endl;
                 }
-                cout << "i = " << i << endl;
                 /*for(int i=0; i<pow(2, radix_k1);i++)
                     cout << W[i] << " ";
                 cout << endl;*/
@@ -729,7 +729,7 @@ long long mixed_radix_NWC(  long long *NWC_data, long long *NWC_data_in,
         cout << NWC_data_in[i] << " ";
     cout << endl;
 
-    cout << "------------------" << endl;
+    cout << "---*******************-------" << endl;
     int element_num_k2 = pow(2, radix_k2);
     long long W_k2[element_num_k2 - 1] = {0} ;
     long long tmp_k2[element_num_k2] = {0} ;
@@ -775,7 +775,124 @@ long long mixed_radix_NWC(  long long *NWC_data, long long *NWC_data_in,
     cout << endl;
 }
 
+long long radix1_part_NWC(  long long *NWC_data, long long *NWC_data_in, 
+                            long long n, long long radix_k1, long long radix_k2, long long phi, 
+                            long long modular){
+    
+    cout << "n = " << n << endl;
+    long long k = ( log2(n) - radix_k2) / radix_k1;
+    cout << "k = " << k << endl;
+    long long parameter_check = radix_k1 * k + radix_k2;
+    cout << "parameter_check = " << parameter_check << endl;
+    assert(parameter_check == log2(n));
 
+    int element_num = pow(2, radix_k1);
+    long long W[element_num - 1] = {0};
+    long long tmp[element_num] = {0} ;
+    long long tmp_array[element_num] = {0};
+    BitOperate BR;
+    //k radix 2^k1 NTTs
+    for(long long l=0; l<k; l++){
+        for(long long m=1; m<pow(2, radix_k1); m++){
+            long long m_bar = BR.BitReserve( (pow(2, radix_k1*l)-1) * pow(2, floor(log2(m))) + m, log2(n) ); 
+            //cout << "(pow(2, radix_k1*l)-1) * pow(2, floor(log2(m))) + m = " << (pow(2, radix_k1*l)-1) * pow(2, floor(log2(m))) + m << endl;
+            //cout << "m_bar = " << m_bar << endl;
+            W[m] = ExpMod(phi, m_bar, modular);
+            //cout << "W[" << m << "] = " << W[m] << endl;
+        }
+        cout << "------------" << endl;
+        for(int j=0; j<pow(2, radix_k1*l); j++){
+            long long j_bar = BR.BitReserve(j, radix_k1*l);
+            for(int i=0; i<pow(2, log2(n)- radix_k1*(l+1)); i++){
+                for(int m=0; m<pow(2, radix_k1); m++){
+                    long long index = j_bar * pow(2, log2(n) - radix_k1*l) + m * pow(2, log2(n) - radix_k1*(l+1)) + i;
+                    tmp[m] = NWC_data_in[index];
+                    //cout << "BU[" << i << "] = " << index << endl;
+                    //cout << "tmp[" << m << "] = " << tmp[m] << endl;
+                }
+                power2_NTT(tmp_array, tmp, pow(2, radix_k1), W, modular); 
+
+                for(int m=0; m<pow(2, radix_k1); m++){
+                    long long index = j_bar * pow(2, log2(n) - radix_k1*l) + m * pow(2, log2(n) - radix_k1*(l+1)) + i;
+                    NWC_data_in[index] = tmp_array[m];
+                    //cout << "tmp_array[" << m << "] = " << tmp_array[m] << endl;
+                    //cout << "NWC_data_in[" << index << "] = " << NWC_data_in[index] << endl;
+                }
+            }
+
+            for(int m=1; m<pow(2, radix_k1); m++){
+                long long Wc_degree = log2(n) - radix_k1 * l - floor(log2(m));
+                if(Wc_degree != log2(n))
+                    Wc_degree = pow(2, Wc_degree);
+                else 
+                    Wc_degree = 0;
+                //cout << "Wc_degree = " << Wc_degree << endl;
+                long long Wc = ExpMod(phi, Wc_degree, modular);
+                W[m] = MulMod(W[m], Wc, modular);
+                //cout << "W[" << m << "] = " << W[m] << endl;
+            }
+        }
+    }
+    for(int i=0; i<n; i++){
+        //cout << NWC_data_in[i] << " ";
+        NWC_data[i] = NWC_data_in[i];
+    }
+        
+    cout << endl;
+}
+
+long long radix2_part_NWC(  long long *NWC_data, long long *NWC_data_in, 
+                            long long n, long long radix_k1, long long radix_k2, long long phi, 
+                            long long modular){
+
+    BitOperate BR;
+    long long k = ( log2(n) - radix_k2) / radix_k1;
+    cout << "k = " << k << endl;
+    long long parameter_check = radix_k1 * k + radix_k2;
+    assert(parameter_check == log2(n));
+    
+    int element_num_k2 = pow(2, radix_k2);
+    long long W_k2[element_num_k2 - 1] = {0} ;
+    long long tmp_k2[element_num_k2] = {0} ;
+    long long tmp_array_k2[element_num_k2] = {0};
+    // radix_2^k2 NTT
+    for(int m=1; m<pow(2, radix_k2); m++){
+        long long idx = (pow(2, radix_k1*k) - 1) * pow(2, floor(log2(m))) + m;
+        //cout << "idx = " << idx << endl;
+        long long m_bar = BR.BitReserve(idx, log2(n));
+        //cout << "m_bar = " << m_bar << endl;
+        W_k2[m] = ExpMod(phi, m_bar, modular);
+        //cout << "W_k2[" << m << "] = " <<  W_k2[m] << endl;
+    }
+    for(int j=0; j<pow(2, radix_k1 * k); j++){
+        long long j_bar = BR.BitReserve(j, radix_k1 * k);
+        for(int m=0; m<pow(2, radix_k2); m++){
+            int idx = j_bar * pow(2, radix_k2) + m;
+            tmp_k2[m] = NWC_data_in[idx];
+        }
+
+        /*for(int i=0; i<pow(2, radix_k2); i++){
+            cout << tmp_k2[i] << " ";
+        }
+        cout << endl;*/
+        power2_NTT(tmp_array_k2, tmp_k2, pow(2,radix_k2), W_k2, modular);
+        for(int m=0; m<pow(2, radix_k2); m++){
+            int idx = j_bar * pow(2, radix_k2) + m;
+            NWC_data_in[idx] = tmp_array_k2[m];
+            //cout << "NWC_data_in[" << idx << "] = " << NWC_data_in[idx] << endl;
+        }
+        for(int m=1; m<pow(2, radix_k2); m++){
+            long long Wc_degree_k2 = radix_k2 - floor(log2(m));
+            Wc_degree_k2 = pow(2, Wc_degree_k2);
+            long long Wc_k2 = ExpMod(phi, Wc_degree_k2, modular);
+            W_k2[m] = MulMod(W_k2[m], Wc_k2, modular);
+        }
+    }
+    for(int i=0; i<n; i++){
+        //cout << NWC_data_in[i] << " ";
+        NWC_data[i] = NWC_data_in[i];
+    }
+}
 
 
 //------------ZZ ----------------------

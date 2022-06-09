@@ -39,6 +39,12 @@ long long power2_NTT(   long long *NTT_data, long long *data_in, long long n,
 long long mixed_radix_NWC(  long long *NWC_data, long long *NWC_data_in, 
                             long long n, long long radix_k1, long long radix_k2, long long phi, 
                             long long modular);
+long long radix1_part_NWC(  long long *NWC_data, long long *NWC_data_in, 
+                            long long n, long long radix_k1, long long radix_k2, long long phi, 
+                            long long modular);
+long long radix2_part_NWC(  long long *NWC_data, long long *NWC_data_in, 
+                            long long n, long long radix_k1, long long radix_k2, long long phi, 
+                            long long modular);                           
 //----------ZZ-------------
 ZZ find_n_rou(ZZ base, long long m, ZZ modular);
 bool check_prou(ZZ n_rou, long long m, ZZ modular);
