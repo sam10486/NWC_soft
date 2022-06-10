@@ -91,3 +91,37 @@ long long BitOperate::unary_xor(long long data_in, long long bit_width){
     xor_out %= 2;
     return xor_out;
 }
+
+
+//------------------for memory initial------------------------
+long long BitOperate::DecToBin_mem_init(long long *BinVec, long long data, long long bit_width){
+    //cout << endl;
+    //cout << data << " ";
+    for(long long int j=0; j<bit_width; j++){
+        BinVec[j] = (data >> j) & 1;
+        //cout << BinVec[j];
+    }
+
+}
+
+long long BitOperate::unary_xor_mem_init(long long data_in, long long bit_width_m, long long s){
+    BitOperate DecToBin;
+    vector<long long> bit_array = DecToBin.DecToBin(data_in, bit_width_m);
+    long long xor_out = 0;
+    for(long long i=0; i<bit_width_m-s; i++){
+        xor_out += bit_array[i];
+    }
+    xor_out %= 2;
+    return xor_out;
+}
+
+long long BitOperate::VecToInt_mem_init(long long data_in, long long bit_width_m, long long s){
+    BitOperate DecToBin;
+    vector<long long> bit_array = DecToBin.DecToBin(data_in, bit_width_m);
+    long long integer = 0;
+    for(long long j=1; j < bit_width_m-s; j++){
+        integer += bit_array[j] << j-1;
+        //cout << "bit_array[" << j << "] = " << bit_array[j] << endl;
+    }
+    return integer;
+}

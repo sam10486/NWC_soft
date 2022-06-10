@@ -655,8 +655,8 @@ long long power2_NTT(   long long *NTT_data, long long *data_in, long long n,
                 //cout << "tmp = " << tmp << endl;
                 data_in[i + n/(2*h)] = SubMod(data_in[i], tmp, modular);
                 data_in[i] = AddMod(data_in[i], tmp, modular);
-                //cout << "data_in[" << i + n/(2*h) << "] = " << data_in[i + n/(2*h)] << endl;
                 //cout << "data_in[" << i << "] = " << data_in[i] << endl;
+                //cout << "data_in[" << i + n/(2*h) << "] = " << data_in[i + n/(2*h)] << endl;
             }
         }
     }
@@ -894,6 +894,118 @@ long long radix2_part_NWC(  long long *NWC_data, long long *NWC_data_in,
     }
 }
 
+
+long long mem_AE(long long *data_out, long long *data_in, long long degree_N, long long radix_r){
+    long long num_stage_p;
+    long long bit_width_s;
+    long long relocation_group_g;
+    BitOperate Gray_num, unary_xor, RR, IntToVec, VecToInt, 
+                VecToInt_mem_init, DecToBin_mem_init, unary_xor_mem_init;
+
+    num_stage_p = log(degree_N)/log(radix_r);
+    relocation_group_g = degree_N/pow(radix_r,2);
+    bit_width_s = log(radix_r)/log(2);
+    long long BC_width = (long long) ceil(log2(degree_N/radix_r));
+
+    int BN = 2;
+    int MA = (degree_N/BN)/radix_r;
+    long long memory[BN][MA][radix_r];
+    long long m = log2(degree_N);
+    long long BinVec[m];
+    long long idx_bank0 = 0;
+    long long idx_bank1 = 0;
+
+    cout << "---------------memory clear start---------------------------" << endl;
+    for(int i=0; i<BN; i++){
+        for(int j=0; j<MA; j++){
+            for(int k=0; k<radix_r; k++){
+                memory[i][j][k] = -1;
+                cout << "memory[" << i << "][" << j << "][" << k << "] = " << memory[i][j][k] << endl;
+            }
+        }
+    }
+    cout << "---------------memory initial start-------------------------" << endl;
+    for(int i=0; i<degree_N; i++){
+        //cout << "data[" << i << "] = " << data_in[i] << "   ";
+        long long mem_bank = unary_xor_mem_init.unary_xor_mem_init(data_in[i], m, bit_width_s);
+        //cout << "mem_bank = " << mem_bank << " ";;
+        long long mem_addr = VecToInt_mem_init.VecToInt_mem_init(data_in[i], m, bit_width_s);
+        //cout << "mem_addr = " << mem_addr << endl;
+
+
+        if(mem_bank == 0){
+            //cout << "data_in[" << i << "] = " << data_in[i] << endl;
+            for(int z=0; z<radix_r; z++){
+                if(memory[mem_bank][mem_addr][idx_bank0] == -1){
+                    //cout << "memory[" << mem_bank << "][" << mem_addr << "][" << idx_bank0 << "] = " << memory[mem_bank][mem_addr][idx_bank0] << endl;
+                    memory[mem_bank][mem_addr][idx_bank0] = data_in[i];
+                    //cout << "memory[" << mem_bank << "][" << mem_addr << "][" << idx_bank0 << "] = " << memory[mem_bank][mem_addr][idx_bank0] << endl;
+                    //cout << "idx_bank0 = " << idx_bank0 << endl;
+                    //cout << "-----------------------------" << endl;
+                    break;
+                }else{
+                    idx_bank0++;
+                    if(idx_bank0 == radix_r){
+                        idx_bank0 = 0;
+                    }
+                }
+            }
+        }else if(mem_bank == 1){
+            //cout << "data_in[" << i << "] = " << data_in[i] << endl;
+            for(int z=0; z<radix_r; z++){
+                if(memory[mem_bank][mem_addr][idx_bank1] == -1){
+                    //cout << "memory[" << mem_bank << "][" << mem_addr << "][" << idx_bank1 << "] = " << memory[mem_bank][mem_addr][idx_bank1] << endl;
+                    memory[mem_bank][mem_addr][idx_bank1] = data_in[i];
+                    //cout << "memory[" << mem_bank << "][" << mem_addr << "][" << idx_bank1 << "] = " << memory[mem_bank][mem_addr][idx_bank1] << endl;
+                    //cout << "idx_bank1 = " << idx_bank1 << endl;
+                    //cout << "-----------------" << endl;
+                    break;
+                }else{
+                    //cout << "123132" << endl;
+                    //cout << "memory[" << mem_bank << "][" << mem_addr << "][" << idx_bank1 << "] = " << memory[mem_bank][mem_addr][idx_bank1] << endl;
+                    //cout << "idx_bank1 = " << idx_bank1 << endl;
+                    idx_bank1++;
+                    if(idx_bank1 == radix_r){
+                        idx_bank1 = 0;
+                    }
+                }
+            }
+        }
+    }
+
+    for(int i=0; i<BN; i++){
+        for(int j=0; j<MA; j++){
+            for(int k=0; k<radix_r; k++){
+                cout << "memory[" << i << "][" << j << "][" << k << "] = " << memory[i][j][k] << endl;
+            }
+        }
+    }
+
+    /*for(long long t=0; t<num_stage_p; t++){
+        cout << "stage = " << t << endl;
+        for(long long i=0; i<relocation_group_g; i++){
+            for(long long j=0; j<radix_r; j++){
+                long long BC = j*relocation_group_g + Gray_num.Gray_code(i, relocation_group_g);
+                long long RR_out = RR.RR(BC, bit_width_s*t, degree_N, radix_r);
+                
+                long long BN = unary_xor.unary_xor(RR_out, BC_width);
+                long long MA = (long long) floor(RR_out >> 1);
+                cout << "(BC, BN, MA) = ";
+                cout << "(" << BC << " , "<< BN <<" , "<< MA << ")" << endl;	
+            
+                IntToVec.IntToVec(BC, degree_N, bit_array);
+                rotate(bit_array.begin(), bit_array.begin()+ bit_width_s*t , bit_array.end());
+                long long Data = VecToInt.VecToInt(bit_array, degree_N);
+                cout << "Data_index = ";
+                cout << "( " ;					
+				for(int k = 0; k < radix_r ; k++ ){
+					cout << Data + k*(1<<(bit_width-bit_width_s-bit_width_s*t)) <<" ";	
+				}
+                cout << ") \n" ;
+            }
+        }
+    }*/
+}
 
 //------------ZZ ----------------------
 

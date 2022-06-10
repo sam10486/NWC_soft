@@ -44,7 +44,8 @@ long long radix1_part_NWC(  long long *NWC_data, long long *NWC_data_in,
                             long long modular);
 long long radix2_part_NWC(  long long *NWC_data, long long *NWC_data_in, 
                             long long n, long long radix_k1, long long radix_k2, long long phi, 
-                            long long modular);                           
+                            long long modular);  
+long long mem_AE(long long *data_out, long long *data_in, long long degree_N, long long radix_r);                         
 //----------ZZ-------------
 ZZ find_n_rou(ZZ base, long long m, ZZ modular);
 bool check_prou(ZZ n_rou, long long m, ZZ modular);

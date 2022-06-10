@@ -14,6 +14,9 @@ public:
     long long RR(long long BC, long long shift_bit, long long N, long long r);
     long long Gray_code(long long index, long long group);
     long long unary_xor(long long data_in, long long bit_width);
+    long long DecToBin_mem_init(long long *BinVec, long long data, long long bit_width);
+    long long unary_xor_mem_init(long long data_in, long long bit_width_m, long long s);
+    long long VecToInt_mem_init(long long data_in, long long bit_width_m, long long s);
 };
 
 #endif
