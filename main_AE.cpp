@@ -12,8 +12,8 @@
 using namespace std;
 
 int main(){
-    long long degree_N = 16;
-    long long radix_r = 2;
+    long long degree_N = 256;
+    long long radix_r = 4;
     long long num_stage_p;
     long long bit_width_s;
     long long relocation_group_g;
