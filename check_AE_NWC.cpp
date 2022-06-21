@@ -40,25 +40,37 @@ int main(){
     ifs1.close();
     ifs2.close();
     int correct=0;
-    int j;
+    int cnt = 0;
 
+    int flag = 0;
+    int equal_idx = 0;
     for(int i=0; i<memory_ans_array.size(); i++){
         long long mem_ans = memory_ans_array[i];
         //cout << "mem_ans = " << mem_ans << endl;
-        for(j=0; j<algo_asn_array.size(); j++){
+        for(int j=0; j<algo_asn_array.size(); j++){
             long long algo_ans = algo_asn_array[j];
             if(mem_ans == algo_ans){
-                correct++;
-                break;
+                flag = 1;
+                equal_idx = j;
+                cnt++;
+                cout << "cnt = " << cnt << endl;
             }
         }
-        if(correct != 0){
-            cout << "correct = " << correct << endl;
-            cout << "memory_ans[" << i << "] = " << memory_ans_array[i] << " === algo_asn_array[" << j << "] = " << algo_asn_array[j] << ", PASS!" << endl;
-            correct = 0;
+        if(flag == 1){
+            cout << "memory_ans[" << i+1 << "] = " << memory_ans_array[i] << " === algo_asn_array[" << equal_idx+1 << "] = " << algo_asn_array[equal_idx] << ", PASS!" << endl;
+            flag = 0;
         }else{
-            cout << "memory_ans[" << i << "] False XX " << endl;
-            correct = 0;
+            cout << "memory_ans[" << i+1 << "] False XX " << endl;
+            flag = 0;
         }
+    }
+
+    cout << "memory_ans_array.size() = " << memory_ans_array.size() << endl;
+    if(cnt == memory_ans_array.size()){
+        cout << "ALL PASS! " << endl;
+        cout << "cnt = " << cnt << endl;
+    }else{
+        cout << "cnt = " << cnt << endl;
+        cout << "something error! " << endl;
     }
 }

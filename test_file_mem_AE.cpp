@@ -15,7 +15,7 @@ using namespace NTL;
 
 int main(){
 
-    long long n = 64;
+    long long n = 256;
     long long data_in[n];
     long long data_out[n];
     long long radix_mem = 4;

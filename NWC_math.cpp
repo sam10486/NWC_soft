@@ -702,7 +702,7 @@ long long mixed_radix_NWC(  long long *NWC_data, long long *NWC_data_in,
                     tmp[m] = NWC_data_in[index];
                     cout << index << ", ";
                     //cout << "Group[" << j << "][" << i << "]= " << index << endl;
-                    //cout << "tmp[" << m << "] = " << tmp[m] << endl;
+                    cout << "tmp[" << m << "] = " << tmp[m] << endl;
                 }
                 cout << endl;
                 /*cout << "W[" << j << "][" << i << "] = ";
@@ -759,8 +759,9 @@ long long mixed_radix_NWC(  long long *NWC_data, long long *NWC_data_in,
         long long j_bar = BR.BitReserve(j, radix_k1 * k);
         for(int m=0; m<pow(2, radix_k2); m++){
             int idx = j_bar * pow(2, radix_k2) + m;
+            cout << "idx = " << idx << endl;
             tmp_k2[m] = NWC_data_in[idx];
-            cout << idx << ", ";
+            //cout << idx << ", ";
             //cout << "Group[" << j << "]= " << idx << endl;
         }
         cout << endl;
@@ -772,7 +773,7 @@ long long mixed_radix_NWC(  long long *NWC_data, long long *NWC_data_in,
         for(int m=0; m<pow(2, radix_k2); m++){
             int idx = j_bar * pow(2, radix_k2) + m;
             NWC_data_in[idx] = tmp_array_k2[m];
-            //cout << "NWC_data_in[" << idx << "] = " << NWC_data_in[idx] << endl;
+            cout << "NWC_data_in[" << idx << "] = " << NWC_data_in[idx] << endl;
         }
         for(int m=1; m<pow(2, radix_k2); m++){
             long long Wc_degree_k2 = radix_k2 - floor(log2(m));
@@ -1249,24 +1250,227 @@ long long mem_AE_test(long long t, long long degree_N, long long radix_r,
 }
 
 
-long long mem_init_in_place(vector<vector<vector<long long> > > &memory_init, long long input_idx, long long N, long long radix,
+long long mem_init_in_place(vector<vector<long long> > &memory_init, long long data_in, long long input_idx, long long N, long long radix,
                             long long modular){
     BitOperate BO;
-    long long bit_width_N = log2(N);
-    vector<long long> Order = BO.DecToBin(input_idx, bit_width_N);
     long long Bank = 0;
     long long delta = log2(radix);
     long long bank_upper_bound = floor((log2(N)) / delta);
-    vector<long long> Order_tmp;
-    for(int i=0; i<bank_upper_bound; i++){
+    long long bit_width_N = delta * (bank_upper_bound+1);
+    vector<long long> Order = BO.DecToBin(input_idx, bit_width_N);
+
+    int Order_tmp_size = (delta * (bank_upper_bound+1)) - (delta * bank_upper_bound);
+    cout << "Order_tmp_size = " << Order_tmp_size << endl;
+    vector<long long> Order_tmp(Order_tmp_size);
+    cout << "bank_upper_bound = " << bank_upper_bound << ", delta = " << delta << endl;
+
+
+    for(int i=0; i<=bank_upper_bound; i++){
         int Order_start = delta * i;
         int Order_end = delta * (i+1) - 1;
+        cout << "------------" << endl;
+        //cout << "Order_end = " << Order_end << ", Order_start = " << Order_start << ", bit_width_N = " << bit_width_N << endl;
         for(int j=Order_start; j<=Order_end; j++){
+            //cout << "Order[" << j << "] = " << Order[j] << endl;
+            //cout << j << "-" << Order_start << " = " << j-Order_start << endl;
             Order_tmp[j-Order_start] = Order[j];
+            //cout << "Order_tmp[" << j-Order_start << "] = " << Order_tmp[j-Order_start] << endl;
         }
-        Bank = AddMod(Bank, BO.VecToInt(Order_tmp, N), modular);
+
+        for(int i=0; i<Order_tmp_size; i++)
+            cout << "Order_tmp[" << i << "] = " << Order_tmp[i] << endl;
+        long long integer_Order_tmp = BO.VecToInt(Order_tmp, pow(2,Order_tmp_size));
+        cout << "integer_Order_tmp = " << integer_Order_tmp << endl;
+        Bank = AddMod(Bank, integer_Order_tmp, radix);
+        //cout << "Bank = " << Bank << endl;
+    }
+    long long Addr = input_idx >> delta;
+
+    cout << "Bank = " << Bank << ", Addr = " << Addr << ", data_in = " << data_in << endl;
+    memory_init[Bank][Addr] = data_in;
+
+}
+
+long long mixed_radix_NWC_in_place(  long long *NWC_data, long long *NWC_data_in, 
+                            long long n, long long radix_k1, long long radix_k2, long long phi, 
+                            long long modular,
+                            vector<vector<long long> > &memory){
+
+    long long k = ( log2(n) - radix_k2) / radix_k1;
+    //cout << "k = " << k << endl;
+    long long parameter_check = radix_k1 * k + radix_k2;
+    assert(parameter_check == log2(n));
+
+    int pow_radix_k1 = pow(2, radix_k1);
+    long long W[pow_radix_k1 - 1] = {0};
+    long long tmp[pow_radix_k1] = {0} ;
+    long long tmp_array[pow_radix_k1] = {0};
+    BitOperate BR;
+    //k radix 2^k1 NTTs
+    for(long long l=0; l<k; l++){
+        cout << "<<<<<<<l>>>>>>>> = " << l << endl << "m_bar = ";
+        for(long long m=1; m<pow(2, radix_k1); m++){
+            long long m_bar = BR.BitReserve( (pow(2, radix_k1*l)-1) * pow(2, floor(log2(m))) + m, log2(n) ); 
+            //cout << "(pow(2, radix_k1*l)-1) * pow(2, floor(log2(m))) + m = " << (pow(2, radix_k1*l)-1) * pow(2, floor(log2(m))) + m << endl;
+            //cout << "m_bar = " << m_bar << endl;
+            cout << m_bar << ", ";
+            W[m] = ExpMod(phi, m_bar, modular);
+            cout << "W[" << m << "] = " << W[m] << endl;
+        }
+        //cout << endl;
+        cout << "----j means group number, i means numbers of BU in one group----" << endl;
+        for(int j=0; j<pow(2, radix_k1*l); j++){
+            long long j_bar = BR.BitReserve(j, radix_k1*l);
+            for(int i=0; i<pow(2, log2(n)- radix_k1*(l+1)); i++){
+                cout << "i = " << i << endl;
+                cout << "Group[" << j << "][" << i << "]= ";
+                for(int m=0; m<pow(2, radix_k1); m++){
+                    long long index = j_bar * pow(2, log2(n) - radix_k1*l) + m * pow(2, log2(n) - radix_k1*(l+1)) + i;
+                    long long mem_Read_Data = mem_in_place(memory, 0, index, n, pow_radix_k1, 1, 0);
+                    tmp[m] = mem_Read_Data;
+                    cout << index << ", ";
+                    //cout << "Group[" << j << "][" << i << "]= " << index << endl;
+                    cout << "tmp[" << m << "] = " << tmp[m] << endl;
+                }
+                cout << endl;
+                cout << "W[" << j << "][" << i << "] = ";
+                for(int i=0; i<pow(2, radix_k1);i++)
+                    cout << W[i] << " ";
+                cout << endl;
+                power2_NTT(tmp_array, tmp, pow(2, radix_k1), W, modular); 
+
+                for(int m=0; m<pow(2, radix_k1); m++){
+                    long long index = j_bar * pow(2, log2(n) - radix_k1*l) + m * pow(2, log2(n) - radix_k1*(l+1)) + i;
+                    mem_in_place(memory, tmp_array[m], index, n, pow_radix_k1, 0, 1);
+                    //NWC_data_in[index] = tmp_array[m];
+                    cout << "tmp_array[" << m << "] = " << tmp_array[m] << endl;
+                    //cout << "NWC_data_in[" << index << "] = " << NWC_data_in[index] << endl;
+                }
+            }
+
+            for(int m=1; m<pow(2, radix_k1); m++){
+                long long Wc_degree = log2(n) - radix_k1 * l - floor(log2(m));
+                if(Wc_degree != log2(n))
+                    Wc_degree = pow(2, Wc_degree);
+                else 
+                    Wc_degree = 0;
+                cout << "Wc_degree = " << Wc_degree << endl;
+                long long Wc = ExpMod(phi, Wc_degree, modular);
+                W[m] = MulMod(W[m], Wc, modular);
+                //cout << "W[" << m << "] = " << W[m] << endl;
+            }
+        }
+
+        /*int BN = pow_radix_k1;
+        int MA = (n/BN);
+        for(int i=0; i<BN; i++){
+            for(int j=0;j<MA;j++){
+                cout << "memory[" << i << "][" << j << "] = " << memory[i][j] << endl;
+            }
+        }*/
+    }
+    
+    cout << "---*******************-------" << endl;
+    int pow_radix_k2 = pow(2, radix_k2);
+    long long W_k2[pow_radix_k2 - 1] = {0} ;
+    long long tmp_k2[pow_radix_k2] = {0} ;
+    long long tmp_array_k2[pow_radix_k2] = {0};
+    // radix_2^k2 NTT
+    for(int m=1; m<pow(2, radix_k2); m++){
+        long long idx = (pow(2, radix_k1*k) - 1) * pow(2, floor(log2(m))) + m;
+        //cout << "idx = " << idx << endl;
+        long long m_bar = BR.BitReserve(idx, log2(n));
+        cout << "m_bar = " << m_bar << endl;
+        W_k2[m] = ExpMod(phi, m_bar, modular);
+        //cout << "W_k2[" << m << "] = " <<  W_k2[m] << endl;
+    }
+    for(int j=0; j<pow(2, radix_k1 * k); j++){
+        cout << "j = " << j << endl;
+        //cout << "Group[" << j << "]= ";
+        long long j_bar = BR.BitReserve(j, radix_k1 * k);
+        for(int m=0; m<pow(2, radix_k2); m++){
+            int idx = j_bar * pow(2, radix_k2) + m;
+            cout << "idx = " << idx << endl;
+            long long mem_Read_Data_k2_stage = mem_in_place(memory, 0, idx, n, pow_radix_k1, 1, 0);
+            tmp_k2[m] = mem_Read_Data_k2_stage;
+            //cout << idx << ", ";
+            //cout << "Group[" << j << "]= " << idx << endl;
+            //cout << "tmp_k2[" << m << "] = " << tmp_k2[m] << endl;
+        }
+        cout << endl;
+        for(int i=0; i<pow(2, radix_k2); i++){
+            cout << "tmp_k2[" << i << "] = " << tmp_k2[i] << " ";
+        }
+        cout << endl;
+        power2_NTT(tmp_array_k2, tmp_k2, pow(2,radix_k2), W_k2, modular);
+        for(int m=0; m<pow(2, radix_k2); m++){
+            int idx = j_bar * pow(2, radix_k2) + m;
+            mem_in_place(memory, tmp_array_k2[m], idx, n, pow_radix_k1, 0, 1);
+            //NWC_data_in[idx] = tmp_array_k2[m];
+            cout << "tmp_array_k2[" << m << "] = " << tmp_array_k2[m] << endl;
+        }
+        for(int m=1; m<pow(2, radix_k2); m++){
+            long long Wc_degree_k2 = radix_k2 - floor(log2(m));
+            Wc_degree_k2 = pow(2, Wc_degree_k2);
+            //cout << "Wc_degree_k2 = " << Wc_degree_k2 << endl;
+            long long Wc_k2 = ExpMod(phi, Wc_degree_k2, modular);
+            W_k2[m] = MulMod(W_k2[m], Wc_k2, modular);
+            //cout << "W_k2[" << m << "] = " << W_k2[m] << endl;
+        }
     }
 
+    /*int BN = pow_radix_k2;
+    int MA = (n/BN);
+    for(int i=0; i<BN; i++){
+        for(int j=0;j<MA;j++){
+            cout << "memory[" << i << "][" << j << "] = " << memory[i][j] << endl;
+        }
+    }*/
+}
+
+long long mem_in_place(vector<vector<long long> > &memory, long long data_in, long long input_idx, long long N, long long radix,
+                        long long Read_mode, long long Write_mode){
+    BitOperate BO;
+    long long Bank = 0;
+    long long delta = log2(radix);
+    long long bank_upper_bound = floor((log2(N)) / delta);
+    long long bit_width_N = delta * (bank_upper_bound+1);
+    vector<long long> Order = BO.DecToBin(input_idx, bit_width_N);
+
+    int Order_tmp_size = (delta * (bank_upper_bound+1)) - (delta * bank_upper_bound);
+    //cout << "Order_tmp_size = " << Order_tmp_size << endl;
+    vector<long long> Order_tmp(Order_tmp_size);
+    //cout << "bank_upper_bound = " << bank_upper_bound << ", delta = " << delta << endl;
+
+
+    for(int i=0; i<=bank_upper_bound; i++){
+        int Order_start = delta * i;
+        int Order_end = delta * (i+1) - 1;
+        //cout << "------------" << endl;
+        //cout << "Order_end = " << Order_end << ", Order_start = " << Order_start << ", bit_width_N = " << bit_width_N << endl;
+        for(int j=Order_start; j<=Order_end; j++){
+            //cout << "Order[" << j << "] = " << Order[j] << endl;
+            //cout << j << "-" << Order_start << " = " << j-Order_start << endl;
+            Order_tmp[j-Order_start] = Order[j];
+            //cout << "Order_tmp[" << j-Order_start << "] = " << Order_tmp[j-Order_start] << endl;
+        }
+
+        /*for(int i=0; i<Order_tmp_size; i++)
+            cout << "Order_tmp[" << i << "] = " << Order_tmp[i] << endl;*/
+        long long integer_Order_tmp = BO.VecToInt(Order_tmp, pow(2,Order_tmp_size));
+        cout << "integer_Order_tmp = " << integer_Order_tmp << endl;
+        Bank = AddMod(Bank, integer_Order_tmp, radix);
+        //cout << "Bank = " << Bank << endl;
+    }
+    long long Addr = input_idx >> delta;
+
+    cout << "Bank = " << Bank << ", Addr = " << Addr << ", data_in = " << data_in << endl;
+    if(Read_mode){
+        long long Read_data_out = memory[Bank][Addr];
+        return Read_data_out;
+    }else if(Write_mode){
+        memory[Bank][Addr] = data_in;
+    }
 
 }
 //------------ZZ ----------------------

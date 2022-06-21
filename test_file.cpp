@@ -67,11 +67,12 @@ int main(){
     }
     cout << endl;*/
 
-    ofstream ofs;
+    ofstream ofs, ofs2;
     ofs.open("/home/ldap-users/siang/Desktop/NWC_software/check_AE/algo_asn.txt");
+    ofs2.open("/home/ldap-users/siang/Desktop/NWC_software/check_in_place/algo_asn.txt");
 
-    long long n = 64;
-    long long modular = 12289;
+    long long n = 32768;
+    long long modular = 65537;
     long long phi = find_phi(n, modular);
     long long prou = ExpMod(phi, 2, modular);
 
@@ -94,7 +95,7 @@ int main(){
     }
     cout << endl;
 
-    mixed_radix_NWC(mixed_radix_out, data_in, n, 2, 2, phi, modular);
+    mixed_radix_NWC(mixed_radix_out, data_in, n, 4, 3, phi, modular);
 
     cout << "output" << endl;
     BitOperate BR;
@@ -127,13 +128,15 @@ int main(){
         cout << "****PASS****" << endl;
     
     
-    if(!ofs.is_open()){
+    if(!ofs.is_open() || !ofs2.is_open()){
         cout << "failed to open file.\n" << endl;
     }else {
         for(int i=0; i<n;i++){
             ofs << DFT_data[i] << endl;
+            ofs2 << DFT_data[i] << endl;
         }
         ofs.close();
+        ofs2.close();
     }
     
     

@@ -53,6 +53,16 @@ long long mixed_radix_NWC_AE(long long *NWC_data, long long *NWC_data_in,
                             long long n, long long radix_k1, long long radix_k2, long long phi, 
                             long long modular, 
                             vector<vector<vector<long long> > > &memory);
+long long mem_init_in_place(vector<vector<long long> > &memory_init, long long data_in, long long input_idx, long long N, long long radix,
+                            long long modular);
+
+long long mixed_radix_NWC_in_place(  long long *NWC_data, long long *NWC_data_in, 
+                            long long n, long long radix_k1, long long radix_k2, long long phi, 
+                            long long modular,
+                            vector<vector<long long> > &memory);
+
+long long mem_in_place(vector<vector<long long> > &memory, long long data_in, long long input_idx, long long N, long long radix,
+                        long long Read_mode, long long Write_mode);
 //----------ZZ-------------
 ZZ find_n_rou(ZZ base, long long m, ZZ modular);
 bool check_prou(ZZ n_rou, long long m, ZZ modular);
