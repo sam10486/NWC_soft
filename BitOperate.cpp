@@ -92,6 +92,23 @@ long long BitOperate::unary_xor(long long data_in, long long bit_width){
     return xor_out;
 }
 
+long long BitOperate::left_rotate(long long input, long long shift_bit, long long N){
+    long long RR_out = 0;
+    long long bit_width = (long long)ceil(log2(N));
+    //cout << "input = " << input << ", " << "shift_bit = " << shift_bit << ", " << "N = " << N << endl;
+    vector<long long> bit_array(bit_width);
+    BitOperate DecToBin;
+    bit_array = DecToBin.DecToBin(input, bit_width);
+
+    rotate(bit_array.begin(), bit_array.begin()+shift_bit, bit_array.end());
+    //cout << "----------" << endl;
+    for(long long j=0; j < bit_width; j++){
+        RR_out += bit_array[j] << j;
+        //cout << RR_out << endl ;
+    }
+    return RR_out;
+}
+
 
 //------------------for memory initial------------------------
 long long BitOperate::DecToBin_mem_init(long long *BinVec, long long data, long long bit_width){

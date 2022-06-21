@@ -8,6 +8,7 @@
 #include "math.h"
 #include "NWC.h"
 #include <NTL/ZZ.h>
+#include <fstream>
 
 using namespace std;
 using namespace NTL;
@@ -66,9 +67,10 @@ int main(){
     }
     cout << endl;*/
 
+    ofstream ofs;
+    ofs.open("/home/ldap-users/siang/Desktop/NWC_software/check_AE/algo_asn.txt");
 
-
-    long long n = 256;
+    long long n = 64;
     long long modular = 12289;
     long long phi = find_phi(n, modular);
     long long prou = ExpMod(phi, 2, modular);
@@ -123,5 +125,18 @@ int main(){
         cout << "mix radix error!, error = " << err << endl;
     else 
         cout << "****PASS****" << endl;
+    
+    
+    if(!ofs.is_open()){
+        cout << "failed to open file.\n" << endl;
+    }else {
+        for(int i=0; i<n;i++){
+            ofs << DFT_data[i] << endl;
+        }
+        ofs.close();
+    }
+    
+    
+    
     return 0;
 }
